@@ -3,42 +3,11 @@ data "aws_route53_zone" "jv_magic_zone" {
   name = "jv-magic.com"
 }
 
-# ACM Certificate for *.jv-magic.com
-resource "aws_acm_certificate" "jv_magic_cert" {
-  domain_name       = "jv-magic.com"
-  validation_method = "DNS"
-
-  subject_alternative_names = ["*.jv-magic.com"]
-
-  lifecycle {
-    create_before_destroy = true
-  }
-
-  # Use the ACM provider in us-east-1
-  provider = aws.acm_us_east_1
-}
-
-# ACM Certificate Validation for Route53 record for DNS
-resource "aws_route53_record" "jv_magic_cert_validation" {
-  for_each = {
-    for dvo in aws_acm_certificate.jv_magic_cert.domain_validation_options : dvo.domain_name => {
-      name    = dvo.resource_record_name
-      type    = dvo.resource_record_type
-      value   = dvo.resource_record_value
-      zone_id = data.aws_route53_zone.jv_magic_zone.zone_id
-    }
-  }
-
-  zone_id = each.value.zone_id
-  name    = each.value.name
-  type    = each.value.type
-  records = [each.value.value]
-  ttl     = 60
-}
-
-resource "aws_acm_certificate_validation" "jv_magic_cert_validated" {
-  certificate_arn         = aws_acm_certificate.jv_magic_cert.arn
-  validation_record_fqdns = [for record in aws_route53_record.jv_magic_cert_validation : record.fqdn]
+# Reference the existing ACM Certificate for *.jv-magic.com
+data "aws_acm_certificate" "jv_magic_cert" {
+  domain       = "*.jv-magic.com"
+  statuses     = ["ISSUED"]
+  most_recent  = true
 }
 
 # VPC
@@ -104,7 +73,7 @@ resource "aws_route_table_association" "public_rt_assoc_2" {
 resource "aws_security_group" "alb_sg" {
   vpc_id      = aws_vpc.simpsons_vpc.id
   name_prefix = "alb-sg"
-  description = "Security group for the ALB"
+  description = var.alb_sg_description
 
   ingress {
     from_port   = 443
@@ -125,7 +94,7 @@ resource "aws_security_group" "alb_sg" {
 resource "aws_security_group" "ecs_sg" {
   vpc_id      = aws_vpc.simpsons_vpc.id
   name_prefix = "ecs-sg"
-  description = "Security group for ECS tasks"
+  description = var.ecs_sg_description
 
   egress {
     from_port   = 0
@@ -153,13 +122,13 @@ resource "aws_lb_target_group" "simpsons_tg" {
   target_type  = "ip"
 }
 
-# ALB Listener
+# ALB Listener for HTTPS
 resource "aws_lb_listener" "https_listener" {
   load_balancer_arn = aws_lb.simpsons_alb.arn
   port              = 443
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate_validation.jv_magic_cert_validated.certificate_arn
+  certificate_arn   = data.aws_acm_certificate.jv_magic_cert.arn
 
   default_action {
     type             = "forward"
@@ -191,7 +160,6 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-
 # ECS Cluster
 resource "aws_ecs_cluster" "simpsons_cluster" {
   name = var.ecs_cluster_name
@@ -204,8 +172,6 @@ resource "aws_ecs_task_definition" "simpsons_task" {
   network_mode             = "awsvpc"
   cpu                      = "256"
   memory                   = "512"
-
-  
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
@@ -232,7 +198,6 @@ resource "aws_ecs_task_definition" "simpsons_task" {
     }
   ])
 }
-
 
 # ECS Service
 resource "aws_ecs_service" "simpsons_service" {
