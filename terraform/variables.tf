@@ -8,13 +8,12 @@ variable "aws_region" {
 variable "aws_profile" {
   description = "The AWS CLI profile to use"
   type        = string
-  default     = "bode_profile_2"
 }
 
 variable "account_id" {
   description = "AWS Account ID"
   type        = string
-  default     = "112577721941"
+  default     = "183295435346"
 }
 
 # ECS Configuration
