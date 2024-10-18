@@ -1,0 +1,38 @@
+name: CI/CD Pipeline for Simpsons Simulator
+
+on:
+  push:
+    branches:
+      - main
+      - code-challenge
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Development Stage
+  development:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.6.3'
+
+      - name: Install Dependencies
+        run: |
+          bundle install --gemfile=app/Gemfile
+
+      - name: Verify Build
+        run: |
+          ruby -c app/simpsons_simulator.rb 
+
+  # Test Stage (Integration Tests)
+  test:
+
+
+  # Production Stage (Deploy)
+  deploy:
