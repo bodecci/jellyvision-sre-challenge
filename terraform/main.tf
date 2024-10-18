@@ -1,5 +1,5 @@
-# Route53 Hosted Zone
-resource "aws_route53_zone" "jv_magic_zone" {
+# Import DNS for jv_magic
+data "aws_route53_zone" "jv_magic_zone" {
   name = "jv-magic.com"
 }
 
@@ -25,7 +25,7 @@ resource "aws_route53_record" "jv_magic_cert_validation" {
       name    = dvo.resource_record_name
       type    = dvo.resource_record_type
       value   = dvo.resource_record_value
-      zone_id = aws_route53_zone.jv_magic_zone.zone_id
+      zone_id = data.aws_route53_zone.jv_magic_zone.zone_id
     }
   }
 
