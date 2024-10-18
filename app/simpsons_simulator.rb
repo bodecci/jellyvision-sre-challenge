@@ -26,3 +26,26 @@ end
 ###################################
 # FIXME: Implement Lisa endpoints #
 ###################################
+
+# TODO add error handling.
+# TODO add newline and have tests account for newline
+
+get '/lisa' do
+  "The baritone sax is the best sax"
+end
+
+post '/lisa' do
+  gift = parse_gift(request.body.read)
+  case gift
+  when 'books', 'book'
+    [200, "I love it"]
+  when 'saxaphone', 'sax'
+    [200, "I REALLY love it"]
+  when 'skateboard'
+    [400, "I REALLY hate it"]
+  when 'video game', 'video_game'
+    [400, "I hate it"]
+  else
+    [400, "Hmm...not sure"]
+  end
+end
