@@ -14,7 +14,7 @@ resource "aws_acm_certificate" "jv_magic_cert" {
     create_before_destroy = true
   }
 
-  # Enable DNS validation through Route53
+  # Use the ACM provider in us-east-1
   provider = aws.acm_us_east_1
 }
 

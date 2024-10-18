@@ -8,13 +8,13 @@ variable "aws_region" {
 variable "aws_profile" {
   description = "The AWS CLI profile to use"
   type        = string
-  default     = "bode_profile"
+  default     = "bode_profile_2"
 }
 
 variable "account_id" {
   description = "AWS Account ID"
   type        = string
-  default     = "933071741192"
+  default     = "112577721941"
 }
 
 # ECS Configuration
@@ -47,13 +47,6 @@ variable "image_tag" {
   type        = string
   default     = "1.3"
 }
-
-# ACM Certificate for HTTPS
-# variable "certificate_arn" {
-#  description = "ARN of the ACM Certificate for the domain"
-#  type        = string
-#  default     = "arn:aws:acm:us-east-1:933071741192:certificate/abcd1234-56ef-78gh-90ij-klmnopqrstuv"
-# }
 
 # Network Configuration
 variable "vpc_cidr_block" {
