@@ -7,5 +7,5 @@ output "jv_magic_certificate_arn" {
 # Output for the Route53 Hosted Zone ID
 output "jv_magic_zone_id" {
   description = "The Route53 Hosted Zone ID for jv-magic.com"
-  value       = aws_route53_zone.jv_magic_zone.zone_id
+  value       = data.aws_route53_zone.jv_magic_zone.zone_id
 }
